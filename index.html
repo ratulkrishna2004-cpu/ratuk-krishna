@@ -1,18 +1,1127 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ratul Krishna Mojumder</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.3.67/css/materialdesignicons.min.css">
-    <script type="module" crossorigin src="/assets/index-DFh59fwI.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CyCxI3-E.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ratul Krishna Mojumder</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.3.67/css/materialdesignicons.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<style>
+/* ============================================================
+   FIREBASE CONFIG — শুধু এইটুকু বদলাও তোমার config দিয়ে
+   ============================================================ */
+
+/* ============================================================
+   GLOBAL RESET & VARIABLES
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06060f;--card:#0d0d1f;--card2:#111128;
+  --cyan:#00d4ff;--purple:#a855f7;--indigo:#4f46e5;--mid:#7b5ea7;
+  --txt:#e8e8f0;--txt2:#9090b0;--txt3:#5a5a7a;
+  --border:rgba(123,94,167,.25);--borderB:rgba(0,212,255,.4);
+  --glass:rgba(13,13,31,.7);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(123,94,167,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(123,94,167,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--mid);border-radius:10px}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.page{display:none;min-height:100vh;padding-top:70px;position:relative;z-index:1}
+.page.active{display:block}
+.container{max-width:1100px;margin:0 auto;padding:60px 40px}
+@media(max-width:768px){.container{padding:40px 20px}}
+
+/* ============================================================
+   ORBS
+   ============================================================ */
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;opacity:.3}
+.orb1{width:400px;height:400px;background:radial-gradient(circle,#4f46e5,transparent);top:-100px;right:-100px}
+.orb2{width:300px;height:300px;background:radial-gradient(circle,#00d4ff,transparent);bottom:20%;left:-80px}
+.orb3{width:250px;height:250px;background:radial-gradient(circle,#a855f7,transparent);top:50%;right:10%}
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+nav{position:fixed;top:0;left:0;right:0;z-index:999;height:70px;padding:0 32px;display:flex;align-items:center;justify-content:space-between;transition:all .4s}
+nav.scrolled{background:rgba(6,6,15,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(123,94,167,.2)}
+.logo{font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.1rem;background:linear-gradient(135deg,#00d4ff,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;cursor:pointer;text-decoration:none}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-link{padding:8px 16px;border-radius:30px;font-size:13px;font-weight:600;letter-spacing:1px;color:var(--txt2);border:1px solid transparent;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:6px;background:transparent}
+.nav-link:hover,.nav-link.active{color:var(--cyan);background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.3)}
+.dev-btn{padding:8px 16px;background:rgba(123,94,167,.15);border:1px solid rgba(123,94,167,.3);border-radius:30px;color:var(--purple);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .3s}
+.dev-btn.on{background:rgba(255,50,50,.15);border-color:rgba(255,50,50,.4);color:#ff6b6b}
+.hamburger{display:none;background:transparent;border:none;color:var(--txt);font-size:24px;cursor:pointer}
+.mobile-menu{display:none;position:fixed;top:70px;left:0;right:0;background:rgba(6,6,15,.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:16px 24px;flex-direction:column;gap:8px;z-index:998}
+.mobile-menu.open{display:flex}
+.mobile-link{padding:12px 16px;border-radius:12px;color:var(--txt2);font-weight:600;font-size:15px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .3s}
+.mobile-link:hover,.mobile-link.active{color:var(--cyan);background:rgba(0,212,255,.08)}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:block}}
+
+/* ============================================================
+   GLASS CARD
+   ============================================================ */
+.card{background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:16px;transition:all .3s}
+.card:hover{border-color:var(--borderB);box-shadow:0 0 30px rgba(0,212,255,.08);transform:translateY(-2px)}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn-glow{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:linear-gradient(135deg,#7b5ea7,#4f46e5,#00d4ff);border:none;border-radius:50px;color:#fff;font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;position:relative;overflow:hidden;transition:all .3s;text-decoration:none;box-shadow:0 4px 20px rgba(79,70,229,.4),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn-glow::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);transition:left .5s}
+.btn-glow:hover::before{left:100%}
+.btn-glow:hover{transform:translateY(-3px);box-shadow:0 8px 35px rgba(79,70,229,.6)}
+.btn-outline{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:transparent;border:2px solid var(--cyan);border-radius:50px;color:var(--cyan);font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .3s;text-decoration:none;box-shadow:0 0 15px rgba(0,212,255,.15)}
+.btn-outline:hover{background:rgba(0,212,255,.1);box-shadow:0 0 30px rgba(0,212,255,.4);transform:translateY(-3px)}
+.btn-add{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:linear-gradient(135deg,rgba(79,70,229,.3),rgba(0,212,255,.2));border:1px dashed var(--cyan);border-radius:10px;color:var(--cyan);font-size:13px;font-weight:600;cursor:pointer;transition:all .3s}
+.btn-add:hover{background:rgba(0,212,255,.15)}
+
+/* ============================================================
+   SECTION TITLE
+   ============================================================ */
+.label{color:var(--cyan);font-size:12px;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
+.section-title{font-family:'Orbitron',sans-serif;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;background:linear-gradient(135deg,#fff,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:32px}
+.sec-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:28px}
+
+/* ============================================================
+   HOME — HERO
+   ============================================================ */
+.hero{min-height:100vh;display:flex;align-items:center;padding:100px 40px 60px;position:relative}
+.hero-inner{max-width:1100px;width:100%;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(79,70,229,.15);border:1px solid rgba(79,70,229,.3);border-radius:30px;font-size:12px;color:var(--purple);font-weight:600;letter-spacing:2px;margin-bottom:24px;text-transform:uppercase}
+.hero h1{font-family:'Orbitron',sans-serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:900;line-height:1.1;margin-bottom:8px}
+.grad{background:linear-gradient(135deg,var(--cyan),var(--mid),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--txt2);font-size:15px;line-height:1.7;margin-bottom:36px;max-width:420px}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap}
+.stats{display:flex;gap:28px;margin-top:40px;flex-wrap:wrap}
+.stat-num{font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-lbl{font-size:12px;color:var(--txt3);letter-spacing:1px}
+
+/* Photo ring */
+.photo-wrap{display:flex;flex-direction:column;align-items:center;gap:16px}
+.ring-outer{position:relative;width:300px;height:300px;animation:float 4s ease-in-out infinite}
+.ring-glow{position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(from 0deg,#00d4ff,#7b5ea7,#a855f7,#4f46e5,#00d4ff);animation:spin 6s linear infinite}
+.ring-bg{position:absolute;inset:2px;border-radius:50%;background:var(--bg)}
+.ring-photo{position:absolute;inset:6px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#1a1a3e,#0d0d1f);z-index:2;cursor:default}
+.ring-photo img{position:absolute;object-fit:cover;user-select:none;-webkit-user-drag:none}
+.ring-photo .no-photo{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--txt3)}
+.ring-photo .no-photo i{font-size:70px}
+.photo-controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.photo-ctrl-btn{padding:8px 14px;background:rgba(79,70,229,.2);border:1px solid rgba(79,70,229,.4);border-radius:10px;color:var(--purple);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;transition:all .3s}
+.photo-ctrl-btn:hover{background:rgba(79,70,229,.35)}
+@media(max-width:768px){
+  .hero-inner{grid-template-columns:1fr;gap:40px}
+  .hero-inner .photo-wrap{order:-1}
+  .ring-outer{width:220px;height:220px}
+}
+
+/* ============================================================
+   EDUCATION & AWARDS
+   ============================================================ */
+.edu-card{padding:24px 28px;display:flex;gap:20px;align-items:flex-start;margin-bottom:14px}
+.edu-icon{width:48px;height:48px;border-radius:14px;flex-shrink:0;background:linear-gradient(135deg,rgba(79,70,229,.3),rgba(0,212,255,.2));border:1px solid rgba(0,212,255,.3);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--cyan)}
+.edu-inst{font-weight:700;font-size:16px;margin-bottom:4px}
+.edu-deg{color:var(--txt2);font-size:14px}
+.edu-grade{color:var(--cyan);font-size:13px;margin-top:4px;font-weight:600}
+.edu-year{padding:4px 14px;background:rgba(79,70,229,.15);border:1px solid rgba(79,70,229,.3);border-radius:20px;font-size:12px;color:var(--purple);font-weight:600;white-space:nowrap}
+.edu-right{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.award-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.award-card{padding:18px 20px;display:flex;gap:14px;align-items:center}
+.award-icon{width:40px;height:40px;border-radius:12px;flex-shrink:0;background:linear-gradient(135deg,rgba(168,85,247,.25),rgba(79,70,229,.2));display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--purple);border:1px solid rgba(168,85,247,.2)}
+.award-title{font-weight:600;font-size:13px;line-height:1.4}
+.award-tags{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.tag{font-size:11px;padding:2px 8px;border-radius:8px}
+.tag-yr{color:var(--purple);background:rgba(168,85,247,.1)}
+.tag-cat{color:var(--txt3);background:rgba(255,255,255,.04)}
+
+/* ============================================================
+   CV PAGE
+   ============================================================ */
+.cv-viewer{width:100%;height:80vh;border:none;border-radius:14px}
+.cv-placeholder{height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--txt3)}
+.cv-placeholder i{font-size:60px;color:var(--mid)}
+.cv-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+
+/* ============================================================
+   SKILLS PAGE
+   ============================================================ */
+.switch-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:48px}
+.switch-link{display:inline-flex;align-items:center;gap:10px;padding:12px 20px;border-radius:30px;color:var(--txt);font-weight:600;font-size:14px;text-decoration:none;transition:all .3s;cursor:pointer}
+.switch-link i{font-size:18px;color:var(--cyan)}
+.skill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.skill-card{padding:20px 24px}
+.skill-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.skill-left{display:flex;align-items:center;gap:12px}
+.skill-ico{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,rgba(79,70,229,.3),rgba(0,212,255,.2));display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--cyan);border:1px solid rgba(0,212,255,.2)}
+.skill-name{font-weight:600;font-size:14px}
+.skill-pct{font-family:'Orbitron',sans-serif;font-size:13px;color:var(--cyan);font-weight:700}
+.prog-bar{height:6px;background:rgba(255,255,255,.06);border-radius:10px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#4f46e5,#00d4ff);border-radius:10px;box-shadow:0 0 10px rgba(0,212,255,.4)}
+
+/* ============================================================
+   PROJECTS PAGE
+   ============================================================ */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.proj-card{overflow:hidden;display:flex;flex-direction:column}
+.proj-img{height:180px;overflow:hidden;position:relative}
+.proj-img img{width:100%;height:100%;object-fit:cover}
+.proj-img-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(0,0,0,.6))}
+.proj-no-img{height:100px;display:flex;align-items:center;justify-content:center;font-size:40px}
+.proj-body{padding:20px;flex:1;display:flex;flex-direction:column}
+.proj-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px}
+.proj-name{font-weight:700;font-size:16px;line-height:1.3}
+.proj-type{font-size:10px;padding:3px 10px;border-radius:20px;font-weight:700;white-space:nowrap;letter-spacing:.5px}
+.proj-desc{color:var(--txt2);font-size:13px;line-height:1.6;flex:1;margin-bottom:16px}
+.proj-footer{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
+.proj-link{padding:8px 16px;font-size:12px;border-radius:10px}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:60px 40px 30px}
+.footer-inner{max-width:1100px;margin:0 auto}
+.footer-title{font-family:'Orbitron',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:4px}
+.footer-sub{color:var(--txt3);font-size:14px;margin-bottom:32px}
+.contact-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:40px}
+.contact-card{padding:18px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;position:relative;overflow:hidden}
+.contact-ico{width:44px;height:44px;border-radius:12px;flex-shrink:0;background:linear-gradient(135deg,rgba(79,70,229,.3),rgba(0,212,255,.2));display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--cyan);border:1px solid rgba(0,212,255,.2)}
+.contact-lbl{font-weight:700;font-size:14px}
+.contact-val{font-size:12px;color:var(--txt3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.footer-copy{text-align:center;color:var(--txt3);font-size:13px;border-top:1px solid var(--border);padding-top:24px}
+.dev-actions{display:flex;gap:6px;flex-shrink:0}
+.ic-btn{background:rgba(0,212,255,.1);border:none;border-radius:8px;color:var(--cyan);cursor:pointer;padding:6px 8px;font-size:14px;display:flex;align-items:center}
+.ic-btn.red{background:rgba(255,80,80,.1);color:#ff6b6b}
+
+/* ============================================================
+   MODAL & FORMS
+   ============================================================ */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:#0d0d1f;border:1px solid var(--borderB);border-radius:20px;padding:28px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;box-shadow:0 0 60px rgba(0,212,255,.15);animation:slideUp .3s ease}
+.modal h3{font-family:'Orbitron',sans-serif;color:var(--cyan);margin-bottom:20px;font-size:1rem;letter-spacing:1px}
+.flbl{font-size:12px;color:var(--txt2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:1px}
+.finp{width:100%;padding:12px 16px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:12px;color:var(--txt);font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;margin-bottom:14px;transition:border-color .3s}
+.finp:focus{border-color:var(--cyan)}
+.fsave{width:100%;padding:14px;background:linear-gradient(135deg,var(--indigo),var(--cyan));border:none;border-radius:12px;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;cursor:pointer;margin-top:8px;transition:all .3s}
+.fsave:hover{opacity:.85;transform:translateY(-2px)}
+.fcancel{width:100%;padding:12px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--txt2);font-family:'Space Grotesk',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;transition:all .3s}
+.fcancel:hover{border-color:var(--mid);color:var(--txt)}
+.range-wrap{margin-bottom:14px}
+.range-wrap input[type=range]{width:100%;accent-color:var(--cyan)}
+.check-row{display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.check-item{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--txt2)}
+.check-item input{accent-color:var(--cyan);width:16px;height:16px}
+
+/* Icon picker */
+.icon-picker-wrap{margin-bottom:14px}
+.icon-preview-row{display:flex;gap:10px;align-items:center}
+.icon-preview{width:44px;height:44px;border-radius:10px;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--cyan);flex-shrink:0;cursor:pointer}
+.icon-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-height:160px;overflow-y:auto;padding:10px;background:rgba(0,0,0,.3);border-radius:10px;margin-top:8px;scrollbar-width:thin}
+.icon-opt{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:8px;cursor:pointer;transition:background .2s;font-size:11px;color:var(--txt2)}
+.icon-opt:hover,.icon-opt.sel{background:rgba(0,212,255,.15);color:var(--cyan)}
+.icon-opt i{font-size:20px}
+.icon-grid-wrap{display:none}
+.icon-grid-wrap.open{display:block}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav id="navbar">
+  <a class="logo" onclick="showPage('home')">RKM</a>
+  <div class="nav-links">
+    <div class="nav-link active" onclick="showPage('home')"><i class="mdi mdi-home"></i>Home</div>
+    <div class="nav-link" onclick="showPage('cv')"><i class="mdi mdi-file-account"></i>CV</div>
+    <div class="nav-link" onclick="showPage('skills')"><i class="mdi mdi-lightning-bolt"></i>Skills</div>
+    <div class="nav-link" onclick="showPage('research')"><i class="mdi mdi-flask"></i>Research</div>
+    <div class="nav-link" onclick="showPage('projects')"><i class="mdi mdi-code-braces"></i>Projects</div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="dev-btn" id="devBtn" onclick="toggleDev()">
+      <i class="mdi mdi-shield-lock"></i> Dev
+    </button>
+    <button class="hamburger" onclick="toggleMenu()"><i class="mdi mdi-menu" id="hamIcon"></i></button>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-link active" onclick="showPage('home');closeMenu()"><i class="mdi mdi-home"></i>Home</div>
+  <div class="mobile-link" onclick="showPage('cv');closeMenu()"><i class="mdi mdi-file-account"></i>CV</div>
+  <div class="mobile-link" onclick="showPage('skills');closeMenu()"><i class="mdi mdi-lightning-bolt"></i>Skills</div>
+  <div class="mobile-link" onclick="showPage('research');closeMenu()"><i class="mdi mdi-flask"></i>Research</div>
+  <div class="mobile-link" onclick="showPage('projects');closeMenu()"><i class="mdi mdi-code-braces"></i>Projects</div>
+</div>
+
+<!-- ============================================================
+     HOME PAGE
+     ============================================================ -->
+<div id="page-home" class="page active">
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="badge"><i class="mdi mdi-lightning-bolt"></i>EEE Student · AUST</div>
+        <h1>
+          <span>Ratul</span><br>
+          <span class="grad">Krishna</span><br>
+          <span>Mojumder</span>
+        </h1>
+        <p>Passionate engineer, science Olympiad mentor, graphics designer, singer &amp; archer. Building the future with circuits and creativity. 🔌</p>
+        <div class="hero-btns">
+          <button class="btn-glow" onclick="showPage('skills')"><i class="mdi mdi-lightning-bolt"></i>Design</button>
+          <button class="btn-outline" onclick="showPage('cv')"><i class="mdi mdi-file-account"></i>CV</button>
+        </div>
+        <div class="stats">
+          <div><div class="stat-num">15+</div><div class="stat-lbl">Awards</div></div>
+          <div><div class="stat-num">5</div><div class="stat-lbl">Clubs</div></div>
+          <div><div class="stat-num">5.0</div><div class="stat-lbl">GPA</div></div>
+        </div>
+      </div>
+      <div class="photo-wrap">
+        <div class="ring-outer">
+          <div class="ring-glow"></div>
+          <div class="ring-bg"></div>
+          <div class="ring-photo" id="photoCircle">
+            <div class="no-photo" id="noPhoto"><i class="mdi mdi-account"></i><span style="font-size:11px;text-align:center;padding:0 20px">Set photo in Dev settings</span></div>
+            <img id="photoImg" src="" draggable="false" style="display:none;width:100%;height:100%;top:50%;left:50%;transform:translate(-50%,-50%)" />
+          </div>
+        </div>
+        <!-- Photo edit controls (dev only) -->
+        <div class="photo-controls" id="photoControls" style="display:none">
+          <button class="photo-ctrl-btn" onclick="openPhotoModal()"><i class="mdi mdi-cog"></i>Photo Settings</button>
+          <button class="photo-ctrl-btn" id="editPhotoBtn" onclick="togglePhotoEdit()"><i class="mdi mdi-image-edit"></i>Edit Position</button>
+        </div>
+        <div id="photoEditTools" style="display:none;gap:8px;flex-wrap:wrap;justify-content:center">
+          <button class="photo-ctrl-btn" onclick="zoomPhoto(0.1)"><i class="mdi mdi-magnify-plus"></i>Zoom+</button>
+          <button class="photo-ctrl-btn" onclick="zoomPhoto(-0.1)"><i class="mdi mdi-magnify-minus"></i>Zoom-</button>
+          <button class="fsave" style="width:auto;padding:8px 18px;margin:0;border-radius:10px;font-size:13px" onclick="savePhotoPos()"><i class="mdi mdi-content-save"></i>Save</button>
+          <button class="fcancel" style="width:auto;padding:8px 14px;margin:0;border-radius:10px;font-size:13px" onclick="cancelPhotoEdit()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Education -->
+  <section style="padding:0 0 80px">
+    <div class="container" style="padding-top:0">
+      <div class="sec-head">
+        <div>
+          <div class="label">ACADEMIC JOURNEY</div>
+          <div class="section-title">Education</div>
+        </div>
+        <button class="btn-add dev-only" style="display:none" onclick="openEduModal('new')"><i class="mdi mdi-plus-circle"></i>Add Education</button>
+      </div>
+      <div id="eduList"></div>
+    </div>
+  </section>
+
+  <!-- Awards -->
+  <section style="padding:0 0 80px">
+    <div class="container" style="padding-top:0">
+      <div class="sec-head">
+        <div>
+          <div class="label">ACHIEVEMENTS</div>
+          <div class="section-title">Awards & Honours</div>
+        </div>
+        <button class="btn-add dev-only" style="display:none" onclick="openAwardModal('new')"><i class="mdi mdi-plus-circle"></i>Add Award</button>
+      </div>
+      <div class="award-grid" id="awardList"></div>
+    </div>
+  </section>
+
+  <div id="footer-home"></div>
+</div>
+
+<!-- ============================================================
+     CV PAGE
+     ============================================================ -->
+<div id="page-cv" class="page">
+  <div class="container" style="text-align:center;padding-bottom:20px">
+    <div class="label">MY RESUME</div>
+    <div class="section-title">Curriculum Vitae</div>
+  </div>
+  <div class="container" style="padding-top:0">
+    <div class="card" style="padding:4px;margin-bottom:20px;overflow:hidden">
+      <iframe id="cvFrame" class="cv-viewer" style="display:none"></iframe>
+      <div class="cv-placeholder" id="cvPlaceholder">
+        <i class="mdi mdi-file-pdf-box"></i>
+        <p>CV not configured yet</p>
+        <button class="btn-add dev-only" style="display:none" onclick="openCVModal()"><i class="mdi mdi-link-variant"></i>Set Drive Link</button>
+      </div>
+    </div>
+    <div class="cv-btns">
+      <a id="cvDownload" href="#" target="_blank" class="btn-glow" style="display:none"><i class="mdi mdi-download"></i>Download CV</a>
+      <button class="btn-add dev-only" style="display:none" onclick="openCVModal()"><i class="mdi mdi-cog"></i>Edit CV Links</button>
+    </div>
+  </div>
+  <div id="footer-cv"></div>
+</div>
+
+<!-- ============================================================
+     SKILLS PAGE
+     ============================================================ -->
+<div id="page-skills" class="page">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:50px">
+      <div class="label">WHAT I KNOW</div>
+      <div class="section-title">Skills & Expertise</div>
+    </div>
+
+    <!-- Quick Links / Switches -->
+    <div class="sec-head">
+      <h2 style="font-family:Orbitron;font-size:1.1rem;letter-spacing:1px"><i class="mdi mdi-link-variant" style="color:var(--cyan);margin-right:8px"></i>Quick Links</h2>
+      <button class="btn-add dev-only" style="display:none" onclick="openSwitchModal('new')"><i class="mdi mdi-plus-circle"></i>Add Link</button>
+    </div>
+    <div class="switch-row" id="switchList"></div>
+
+    <!-- Skills -->
+    <div class="sec-head" style="margin-top:40px">
+      <h2 style="font-family:Orbitron;font-size:1.1rem;letter-spacing:1px"><i class="mdi mdi-lightning-bolt" style="color:var(--cyan);margin-right:8px"></i>Technical Skills</h2>
+      <button class="btn-add dev-only" style="display:none" onclick="openSkillModal('new')"><i class="mdi mdi-plus-circle"></i>Add Skill</button>
+    </div>
+    <div class="skill-grid" id="skillList"></div>
+  </div>
+  <div id="footer-skills"></div>
+</div>
+
+<!-- ============================================================
+     RESEARCH PAGE
+     ============================================================ -->
+<div id="page-research" class="page">
+  <div class="container" style="text-align:center">
+    <div class="label">COMING SOON</div>
+    <div class="section-title">Research</div>
+    <div class="card" style="max-width:480px;margin:40px auto;padding:48px">
+      <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(79,70,229,.3),rgba(0,212,255,.2));display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--cyan);margin:0 auto 20px;border:1px solid rgba(0,212,255,.3)">
+        <i class="mdi mdi-flask"></i>
+      </div>
+      <h3 style="font-family:Orbitron;margin-bottom:12px;font-size:1.1rem">Research Section</h3>
+      <p style="color:var(--txt3);font-size:14px;line-height:1.7">Research papers and academic work will be showcased here soon!</p>
+      <div style="margin-top:24px;padding:12px 20px;background:rgba(0,212,255,.08);border-radius:12px;border:1px solid rgba(0,212,255,.2);font-size:13px;color:var(--cyan)">
+        <i class="mdi mdi-trophy"></i> Champion – CS Congress Research Paper (2020)
+      </div>
+    </div>
+  </div>
+  <div id="footer-research"></div>
+</div>
+
+<!-- ============================================================
+     PROJECTS PAGE
+     ============================================================ -->
+<div id="page-projects" class="page">
+  <div class="container">
+    <div class="sec-head" style="margin-bottom:40px">
+      <div>
+        <div class="label">WHAT I'VE BUILT</div>
+        <div class="section-title">Projects</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-add dev-only" style="display:none" onclick="openProjModal('new')"><i class="mdi mdi-plus-circle"></i>Add Project</button>
+        <button class="btn-add dev-only" style="display:none" onclick="openGHModal()"><i class="mdi mdi-github"></i>GitHub Settings</button>
+      </div>
+    </div>
+    <div class="proj-grid" id="projList"></div>
+    <div id="projEmpty" style="text-align:center;padding:80px 20px;color:var(--txt3);display:none">
+      <i class="mdi mdi-rocket-launch-outline" style="font-size:64px;display:block;margin-bottom:16px;color:var(--mid)"></i>
+      <p style="font-size:16px">No projects yet — add one in Dev mode!</p>
+    </div>
+  </div>
+  <div id="footer-projects"></div>
+</div>
+
+<!-- ============================================================
+     DEV LOGIN MODAL
+     ============================================================ -->
+<div class="overlay" id="loginOverlay">
+  <div class="modal" style="max-width:360px;text-align:center">
+    <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(79,70,229,.3),rgba(0,212,255,.2));border:2px solid rgba(0,212,255,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;color:var(--cyan)">
+      <i class="mdi mdi-shield-lock"></i>
+    </div>
+    <h3>DEV ACCESS</h3>
+    <p style="color:var(--txt3);font-size:13px;margin-bottom:20px">Enter password to edit portfolio</p>
+    <input class="finp" type="password" id="loginPass" placeholder="Password..." style="text-align:center;font-size:18px;letter-spacing:4px" onkeydown="if(event.key==='Enter')doLogin()">
+    <p id="loginErr" style="color:#ff6b6b;font-size:13px;display:none;margin-bottom:8px"><i class="mdi mdi-alert-circle"></i> Wrong password!</p>
+    <button class="fsave" onclick="doLogin()"><i class="mdi mdi-login"></i> Login</button>
+    <button class="fcancel" onclick="closeOverlay('loginOverlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     PHOTO SETTINGS MODAL
+     ============================================================ -->
+<div class="overlay" id="photoOverlay">
+  <div class="modal">
+    <h3>📸 Photo Settings</h3>
+    <p style="font-size:13px;color:var(--txt3);margin-bottom:16px;line-height:1.6">
+      তোমার photo GitHub repo তে upload করো (যেমন <code style="color:var(--cyan)">Ratul.jpeg</code>), তারপর নিচে info দাও।
+    </p>
+    <label class="flbl">GitHub Username</label>
+    <input class="finp" id="ph_user" placeholder="your-github-username">
+    <label class="flbl">Repository Name</label>
+    <input class="finp" id="ph_repo" placeholder="portfolio.rk">
+    <label class="flbl">Branch</label>
+    <input class="finp" id="ph_branch" placeholder="main">
+    <label class="flbl">Image Filename</label>
+    <input class="finp" id="ph_file" placeholder="Ratul.jpeg">
+    <button class="fsave" onclick="savePhotoSettings()"><i class="mdi mdi-content-save"></i> Save</button>
+    <button class="fcancel" onclick="closeOverlay('photoOverlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- Education Modal -->
+<div class="overlay" id="eduOverlay">
+  <div class="modal">
+    <h3 id="eduModalTitle">✦ Add Education</h3>
+    <div class="icon-picker-wrap">
+      <label class="flbl">Icon</label>
+      <div class="icon-preview-row">
+        <div class="icon-preview" onclick="toggleIconGrid('eduIconGrid')"><i class="mdi" id="eduIconPrev"></i></div>
+        <input class="finp" style="margin:0;flex:1" placeholder="Search icon..." id="eduIconSearch" oninput="filterIcons('eduIconGrid',this.value)" onfocus="openIconGrid('eduIconGrid')">
+      </div>
+      <div class="icon-grid-wrap" id="eduIconGrid"><div class="icon-grid" id="eduIconGridInner"></div></div>
+      <input type="hidden" id="eduIconVal">
+    </div>
+    <label class="flbl">Institution</label>
+    <input class="finp" id="edu_inst" placeholder="University / College / School">
+    <label class="flbl">Degree</label>
+    <input class="finp" id="edu_deg" placeholder="e.g. B.Sc. in EEE">
+    <label class="flbl">Year</label>
+    <input class="finp" id="edu_year" placeholder="e.g. 2024 – Present">
+    <label class="flbl">Grade (optional)</label>
+    <input class="finp" id="edu_grade" placeholder="e.g. GPA: 5.00">
+    <button class="fsave" onclick="saveEdu()"><i class="mdi mdi-content-save"></i> Save</button>
+    <button class="fcancel" onclick="closeOverlay('eduOverlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- Award Modal -->
+<div class="overlay" id="awardOverlay">
+  <div class="modal">
+    <h3 id="awardModalTitle">✦ Add Award</h3>
+    <div class="icon-picker-wrap">
+      <label class="flbl">Icon</label>
+      <div class="icon-preview-row">
+        <div class="icon-preview" onclick="toggleIconGrid('awardIconGrid')"><i class="mdi" id="awardIconPrev"></i></div>
+        <input class="finp" style="margin:0;flex:1" placeholder="Search icon..." id="awardIconSearch" oninput="filterIcons('awardIconGrid',this.value)" onfocus="openIconGrid('awardIconGrid')">
+      </div>
+      <div class="icon-grid-wrap" id="awardIconGrid"><div class="icon-grid" id="awardIconGridInner"></div></div>
+      <input type="hidden" id="awardIconVal">
+    </div>
+    <label class="flbl">Award Title</label>
+    <input class="finp" id="aw_title" placeholder="e.g. Champion – Science Fest">
+    <label class="flbl">Year (optional)</label>
+    <input class="finp" id="aw_year" placeholder="e.g. 2023">
+    <label class="flbl">Category (optional)</label>
+    <input class="finp" id="aw_cat" placeholder="e.g. Science & Research">
+    <button class="fsave" onclick="saveAward()"><i class="mdi mdi-content-save"></i> Save</button>
+    <button class="fcancel" onclick="closeOverlay('awardOverlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- CV Modal -->
+<div class="overlay" id="cvOverlay">
+  <div class="modal">
+    <h3>📄 CV Settings</h3>
+    <p style="font-size:13px;color:var(--txt3);margin-bottom:16px;line-height:1.6">
+      Google Drive এ CV upload করো → Share → Anyone with link → link এর ID copy করো
+    </p>
+    <label class="flbl">Preview Link (drive.google.com/file/d/<b>ID</b>/preview)</label>
+    <input class="finp" id="cv_preview" placeholder="https://drive.google.com/file/d/ID/preview">
+    <label class="flbl">Download Link</label>
+    <input class="finp" id="cv_download" placeholder="https://drive.google.com/uc?export=download&id=ID">
+    <button class="fsave" onclick="saveCV()"><i class="mdi mdi-content-save"></i> Save</button>
+    <button class="fcancel" onclick="closeOverlay('cvOverlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- Skill Modal -->
+<div class="overlay" id="skillOverlay">
+  <div class="modal">
+    <h3 id="skillModalTitle">✦ Add Skill</h3>
+    <div class="icon-picker-wrap">
+      <label class="flbl">Icon</label>
+      <div class="icon-preview-row">
+        <div class="icon-preview" onclick="toggleIconGrid('skillIconGrid')"><i class="mdi" id="skillIconPrev"></i></div>
+        <input class="finp" style="margin:0;flex:1" placeholder="Search icon..." id="skillIconSearch" oninput="filterIcons('skillIconGrid',this.value)" onfocus="openIconGrid('skillIconGrid')">
+      </div>
+      <div class="icon-grid-wrap" id="skillIconGrid"><div class="icon-grid" id="skillIconGridInner"></div></div>
+      <input type="hidden" id="skillIconVal">
+    </div>
+    <label class="flbl">Skill Name</label>
+    <input class="finp" id="sk_name" placeholder="e.g. Python, Canva">
+    <div class="range-wrap">
+      <label class="flbl">Proficiency: <span id="sk_pct_lbl">80</span>%</label>
+      <input type="range" min="10" max="100" value="80" id="sk_level" oninput="document.getElementById('sk_pct_lbl').textContent=this.value">
+    </div>
+    <button class="fsave" onclick="saveSkill()"><i class="mdi mdi-content-save"></i> Save</button>
+    <button class="fcancel" onclick="closeOverlay('skillOverlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- Switch/Link Modal -->
+<div class="overlay" id="switchOverlay">
+  <div class="modal">
+    <h3 id="switchModalTitle">✦ Add Link</h3>
+    <div class="icon-picker-wrap">
+      <label class="flbl">Icon</label>
+      <div class="icon-preview-row">
+        <div class="icon-preview" onclick="toggleIconGrid('switchIconGrid')"><i class="mdi" id="switchIconPrev"></i></div>
+        <input class="finp" style="margin:0;flex:1" placeholder="Search icon..." id="switchIconSearch" oninput="filterIcons('switchIconGrid',this.value)" onfocus="openIconGrid('switchIconGrid')">
+      </div>
+      <div class="icon-grid-wrap" id="switchIconGrid"><div class="icon-grid" id="switchIconGridInner"></div></div>
+      <input type="hidden" id="switchIconVal">
+    </div>
+    <label class="flbl">Name</label>
+    <input class="finp" id="sw_name" placeholder="e.g. GitHub, LinkedIn">
+    <label class="flbl">URL</label>
+    <input class="finp" id="sw_link" placeholder="https://...">
+    <button class="fsave" onclick="saveSwitch()"><i class="mdi mdi-content-save"></i> Save</button>
+    <button class="fcancel" onclick="closeOverlay('switchOverlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- Project Modal -->
+<div class="overlay" id="projOverlay">
+  <div class="modal" style="max-width:520px">
+    <h3 id="projModalTitle">✦ Add Project</h3>
+    <div class="icon-picker-wrap">
+      <label class="flbl">Icon</label>
+      <div class="icon-preview-row">
+        <div class="icon-preview" onclick="toggleIconGrid('projIconGrid')"><i class="mdi" id="projIconPrev"></i></div>
+        <input class="finp" style="margin:0;flex:1" placeholder="Search icon..." id="projIconSearch" oninput="filterIcons('projIconGrid',this.value)" onfocus="openIconGrid('projIconGrid')">
+      </div>
+      <div class="icon-grid-wrap" id="projIconGrid"><div class="icon-grid" id="projIconGridInner"></div></div>
+      <input type="hidden" id="projIconVal">
+    </div>
+    <label class="flbl">Project Name</label>
+    <input class="finp" id="pr_name" placeholder="e.g. Smart Home Controller">
+    <label class="flbl">Project Type</label>
+    <select class="finp" id="pr_type">
+      <option>Circuit Design</option><option>Embedded System</option><option>Web App</option>
+      <option>Research</option><option>IoT</option><option>Machine Learning</option>
+      <option>Mobile App</option><option>Other</option>
+    </select>
+    <label class="flbl">Content Options</label>
+    <div class="check-row">
+      <label class="check-item"><input type="checkbox" id="pr_hasText" checked> 📝 Description</label>
+      <label class="check-item"><input type="checkbox" id="pr_hasLink" checked> 🔗 Link</label>
+      <label class="check-item"><input type="checkbox" id="pr_hasImg"> 🖼️ Image</label>
+    </div>
+    <div id="pr_textWrap">
+      <label class="flbl">Description</label>
+      <textarea class="finp" id="pr_desc" placeholder="Describe your project..." rows="3" style="resize:vertical"></textarea>
+    </div>
+    <div id="pr_linkWrap">
+      <label class="flbl">Project Link</label>
+      <input class="finp" id="pr_link" placeholder="https://...">
+    </div>
+    <div id="pr_imgWrap" style="display:none">
+      <label class="flbl">Image Filename (from GitHub repo)</label>
+      <input class="finp" id="pr_img" placeholder="e.g. project1.jpg or images/A.png">
+      <p style="font-size:11px;color:var(--txt3);margin-top:-10px;margin-bottom:14px">GitHub repo তে image upload করো, তারপর filename লেখো</p>
+    </div>
+    <button class="fsave" onclick="saveProj()"><i class="mdi mdi-content-save"></i> Save Project</button>
+    <button class="fcancel" onclick="closeOverlay('projOverlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- GitHub Settings Modal -->
+<div class="overlay" id="ghOverlay">
+  <div class="modal">
+    <h3>🐙 GitHub Settings (for project images)</h3>
+    <label class="flbl">GitHub Username</label>
+    <input class="finp" id="gh_user" placeholder="your-username">
+    <label class="flbl">Repository Name</label>
+    <input class="finp" id="gh_repo" placeholder="portfolio.rk">
+    <label class="flbl">Branch</label>
+    <input class="finp" id="gh_branch" placeholder="main">
+    <button class="fsave" onclick="saveGH()"><i class="mdi mdi-content-save"></i> Save</button>
+    <button class="fcancel" onclick="closeOverlay('ghOverlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- Contact Modal -->
+<div class="overlay" id="contactOverlay">
+  <div class="modal">
+    <h3 id="contactModalTitle">✦ Add Contact</h3>
+    <div class="icon-picker-wrap">
+      <label class="flbl">Icon</label>
+      <div class="icon-preview-row">
+        <div class="icon-preview" onclick="toggleIconGrid('contactIconGrid')"><i class="mdi" id="contactIconPrev"></i></div>
+        <input class="finp" style="margin:0;flex:1" placeholder="Search icon..." id="contactIconSearch" oninput="filterIcons('contactIconGrid',this.value)" onfocus="openIconGrid('contactIconGrid')">
+      </div>
+      <div class="icon-grid-wrap" id="contactIconGrid"><div class="icon-grid" id="contactIconGridInner"></div></div>
+      <input type="hidden" id="contactIconVal">
+    </div>
+    <label class="flbl">Label</label>
+    <input class="finp" id="ct_label" placeholder="e.g. Phone, Email, WhatsApp">
+    <label class="flbl">Type</label>
+    <select class="finp" id="ct_type">
+      <option value="phone">Phone (click to copy)</option>
+      <option value="email">Email (opens mail)</option>
+      <option value="whatsapp">WhatsApp (opens chat)</option>
+      <option value="link">Link (opens URL)</option>
+      <option value="location">Location (opens maps)</option>
+    </select>
+    <label class="flbl">Value (number / email / URL)</label>
+    <input class="finp" id="ct_val" placeholder="Value...">
+    <button class="fsave" onclick="saveContact()"><i class="mdi mdi-content-save"></i> Save</button>
+    <button class="fcancel" onclick="closeOverlay('contactOverlay')">Cancel</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+// ============================================================
+// FIREBASE CONFIG — এখানে তোমার config আছে
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyAGBsipDr6skfsvDrYHHCe7CK9AWcCt-dA",
+  authDomain: "portfolio-rk-41348.firebaseapp.com",
+  projectId: "portfolio-rk-41348",
+  storageBucket: "portfolio-rk-41348.firebasestorage.app",
+  messagingSenderId: "1012347569431",
+  appId: "1:1012347569431:web:75d9d60efc9513ac63e352"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ============================================================
+// DEV AUTH
+// ============================================================
+const DEV_PASS = '092418';
+let isDevMode = false;
+
+function toggleDev() {
+  if (isDevMode) { isDevMode = false; applyDevMode(); return; }
+  openOverlay('loginOverlay');
+  setTimeout(()=>document.getElementById('loginPass').focus(), 100);
+}
+function doLogin() {
+  const p = document.getElementById('loginPass').value;
+  if (p === DEV_PASS) {
+    isDevMode = true;
+    closeOverlay('loginOverlay');
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginErr').style.display = 'none';
+    applyDevMode();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+function applyDevMode() {
+  const btn = document.getElementById('devBtn');
+  btn.className = isDevMode ? 'dev-btn on' : 'dev-btn';
+  btn.innerHTML = isDevMode
+    ? '<i class="mdi mdi-shield-off"></i> DEV MODE'
+    : '<i class="mdi mdi-shield-lock"></i> Dev';
+  document.querySelectorAll('.dev-only').forEach(el => {
+    el.style.display = isDevMode ? '' : 'none';
+  });
+  document.getElementById('photoControls').style.display = isDevMode ? 'flex' : 'none';
+  if (!isDevMode) cancelPhotoEdit();
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+let currentPage = 'home';
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-link,.mobile-link').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('[onclick*="showPage(\'' + id + '\'"]').forEach(l => l.classList.add('active'));
+  currentPage = id;
+  window.scrollTo(0, 0);
+}
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').className = window.scrollY > 40 ? 'scrolled' : '';
+});
+function toggleMenu() {
+  const m = document.getElementById('mobileMenu');
+  const ic = document.getElementById('hamIcon');
+  m.classList.toggle('open');
+  ic.className = m.classList.contains('open') ? 'mdi mdi-close' : 'mdi mdi-menu';
+}
+function closeMenu() {
+  document.getElementById('mobileMenu').classList.remove('open');
+  document.getElementById('hamIcon').className = 'mdi mdi-menu';
+}
+
+// ============================================================
+// OVERLAYS
+// ============================================================
+function openOverlay(id) { document.getElementById(id).classList.add('open'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+});
+
+// ============================================================
+// ICON PICKER
+// ============================================================
+const ICONS = [
+  'mdi-lightning-bolt','mdi-chip','mdi-cpu-64-bit','mdi-robot','mdi-resistor','mdi-sine-wave',
+  'mdi-transmission-tower','mdi-flash','mdi-battery-charging','mdi-code-braces','mdi-language-cpp',
+  'mdi-language-c','mdi-console','mdi-terminal','mdi-microsoft-excel','mdi-microsoft-word',
+  'mdi-microsoft-powerpoint','mdi-google-drive','mdi-palette','mdi-brush','mdi-pencil',
+  'mdi-school','mdi-book-open-variant','mdi-diploma','mdi-graduation-cap','mdi-certificate',
+  'mdi-trophy','mdi-medal','mdi-star','mdi-star-circle','mdi-podium-gold','mdi-podium',
+  'mdi-music','mdi-microphone','mdi-music-note','mdi-headphones','mdi-bow-arrow','mdi-target',
+  'mdi-account-group','mdi-account','mdi-account-star','mdi-handshake','mdi-briefcase',
+  'mdi-phone','mdi-whatsapp','mdi-gmail','mdi-linkedin','mdi-facebook','mdi-map-marker',
+  'mdi-earth','mdi-git','mdi-github','mdi-web','mdi-link','mdi-open-in-new','mdi-email',
+  'mdi-telescope','mdi-atom','mdi-flask','mdi-microscope','mdi-rocket','mdi-satellite',
+  'mdi-math-integral','mdi-function','mdi-calculator','mdi-leaf','mdi-tree','mdi-wrench',
+  'mdi-tools','mdi-cog','mdi-hammer','mdi-chart-line','mdi-chart-bar','mdi-database',
+  'mdi-heart','mdi-fire','mdi-lan','mdi-network','mdi-wifi','mdi-monitor','mdi-laptop',
+  'mdi-cellphone','mdi-folder','mdi-file-document','mdi-file-code','mdi-download','mdi-cloud',
+  'mdi-youtube','mdi-instagram','mdi-twitter','mdi-home','mdi-information','mdi-check-circle',
+  'mdi-flag','mdi-bell','mdi-bookmark','mdi-tag','mdi-eye','mdi-magnify','mdi-camera',
+  'mdi-dumbbell','mdi-run','mdi-soccer','mdi-puzzle','mdi-chess-king','mdi-food','mdi-coffee',
+];
+
+function buildIconGrid(gridId, inputId, previewId, hiddenId, initial) {
+  const inner = document.getElementById(gridId + 'Inner');
+  if (!inner) return;
+  inner.innerHTML = '';
+  const icons = initial ? ICONS.filter(i => i.includes(initial.toLowerCase())).slice(0,60) : ICONS.slice(0,60);
+  icons.forEach(ic => {
+    const d = document.createElement('div');
+    d.className = 'icon-opt';
+    d.innerHTML = `<i class="mdi ${ic}"></i><span>${ic.replace('mdi-','').slice(0,8)}</span>`;
+    d.onclick = () => selectIcon(gridId, inputId, previewId, hiddenId, ic);
+    inner.appendChild(d);
+  });
+}
+function filterIcons(gridId, q) {
+  const inner = document.getElementById(gridId + 'Inner');
+  if (!inner) return;
+  const hiddenId = gridId.replace('IconGrid','IconVal');
+  const previewId = gridId.replace('IconGrid','IconPrev');
+  inner.innerHTML = '';
+  ICONS.filter(i => i.includes(q.toLowerCase())).slice(0,60).forEach(ic => {
+    const d = document.createElement('div');
+    d.className = 'icon-opt';
+    d.innerHTML = `<i class="mdi ${ic}"></i><span>${ic.replace('mdi-','').slice(0,8)}</span>`;
+    d.onclick = () => selectIcon(gridId, gridId.replace('IconGrid','IconSearch'), previewId, hiddenId, ic);
+    inner.appendChild(d);
+  });
+}
+function selectIcon(gridId, searchId, previewId, hiddenId, ic) {
+  document.getElementById(previewId).className = 'mdi ' + ic;
+  document.getElementById(hiddenId).value = ic;
+  document.getElementById(gridId).classList.remove('open');
+}
+function toggleIconGrid(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+function openIconGrid(id) {
+  document.getElementById(id).classList.add('open');
+}
+function initIconPicker(prefix, defaultIcon) {
+  const gid = prefix + 'IconGrid';
+  const sid = prefix + 'IconSearch';
+  const pid = prefix + 'IconPrev';
+  const hid = prefix + 'IconVal';
+  document.getElementById(pid).className = 'mdi ' + defaultIcon;
+  document.getElementById(hid).value = defaultIcon;
+  document.getElementById(sid).value = '';
+  buildIconGrid(gid, sid, pid, hid, '');
+}
+
+// ============================================================
+// DEFAULTS
+// ============================================================
+const DEF_EDU = [
+  {id:'e1',icon:'mdi-school',institution:'Ahsanullah University of Science & Technology (AUST)',degree:'B.Sc. in Electrical and Electronic Engineering (EEE)',year:'2024 – Present',grade:''},
+  {id:'e2',icon:'mdi-graduation-cap',institution:'Notre Dame College, Dhaka',degree:'Higher Secondary Certificate (HSC)',year:'2023',grade:'GPA: 5.00'},
+  {id:'e3',icon:'mdi-book-open-variant',institution:'Narayanganj Ideal School',degree:'Secondary School Certificate (SSC)',year:'2021',grade:'GPA: 5.00'},
+];
+const DEF_AWARDS = [
+  {id:'a1',icon:'mdi-trophy',title:'Champion – CS Congress Research Paper',year:'2020',category:'Science & Research'},
+  {id:'a2',icon:'mdi-atom',title:'Champion – BDPHO Regional Round',year:'2020',category:'Science & Research'},
+  {id:'a3',icon:'mdi-rocket',title:'4th Place – 4th National Space Carnival',year:'',category:'Science & Research'},
+  {id:'a4',icon:'mdi-math-integral',title:'Champion – SJC Math Mania',year:'2020',category:'Science & Research'},
+  {id:'a5',icon:'mdi-flask',title:'Champion – HCC Science Fest',year:'2022',category:'Science & Research'},
+  {id:'a6',icon:'mdi-flask',title:'3rd Place – HCC Science Fest',year:'2023',category:'Science & Research'},
+  {id:'a7',icon:'mdi-earth',title:'Champion – NDC National Space & Eco Fest',year:'2023',category:'Science & Research'},
+  {id:'a8',icon:'mdi-podium',title:'3rd Place – 3rd National Science Fest',year:'2023',category:'Science & Research'},
+  {id:'a9',icon:'mdi-leaf',title:'Champion – BUET National Environmental Carnival',year:'2023',category:'Science & Research'},
+  {id:'a10',icon:'mdi-telescope',title:'Bronze Honor – International Astronomy Olympiad',year:'2023',category:'Science & Research'},
+  {id:'a11',icon:'mdi-microphone',title:'2nd Place – Singing, District Level',year:'2015',category:'Cultural'},
+  {id:'a12',icon:'mdi-music',title:'3 Awards – Bangladesh Shishu Academy',year:'',category:'Cultural'},
+  {id:'a13',icon:'mdi-music-note',title:'4 Awards – BAFA',year:'',category:'Cultural'},
+  {id:'a14',icon:'mdi-trophy',title:'Champion – Thana & Upzila Level Singing',year:'2015',category:'Cultural'},
+  {id:'a15',icon:'mdi-bow-arrow',title:'Ranked 61st – 13th National Archery Championship',year:'',category:'Sports'},
+];
+const DEF_SKILLS = [
+  {id:'s1',icon:'mdi-language-cpp',name:'C / C++',level:80},
+  {id:'s2',icon:'mdi-microsoft',name:'Microsoft Office (Expert)',level:95},
+  {id:'s3',icon:'mdi-palette',name:'Canva & Graphics Design',level:85},
+  {id:'s4',icon:'mdi-chip',name:'Quartus II',level:70},
+  {id:'s5',icon:'mdi-sine-wave',name:'LTSpice',level:70},
+  {id:'s6',icon:'mdi-google',name:'Google Workspace',level:90},
+  {id:'s7',icon:'mdi-calendar-star',name:'Event Management',level:88},
+  {id:'s8',icon:'mdi-database',name:'Data Handling',level:82},
+  {id:'s9',icon:'mdi-account-star',name:'Leadership',level:92},
+  {id:'s10',icon:'mdi-microphone',name:'Public Speaking',level:85},
+];
+const DEF_SWITCHES = [
+  {id:'sw1',icon:'mdi-github',name:'GitHub',link:'https://github.com/ratulkrishna2004-cpu'},
+  {id:'sw2',icon:'mdi-linkedin',name:'LinkedIn',link:'https://www.linkedin.com/in/ratul-krishna-b09i24/'},
+];
+const DEF_CONTACTS = [
+  {id:'c1',icon:'mdi-phone',label:'Phone',value:'+8801623519646',type:'phone'},
+  {id:'c2',icon:'mdi-whatsapp',label:'WhatsApp',value:'+8801623519646',type:'whatsapp'},
+  {id:'c3',icon:'mdi-email',label:'Email',value:'ratulkrishna2004@gmail.com',type:'email'},
+  {id:'c4',icon:'mdi-linkedin',label:'LinkedIn',value:'https://www.linkedin.com/in/ratul-krishna-b09i24/',type:'link'},
+  {id:'c5',icon:'mdi-facebook',label:'Facebook',value:'',type:'link'},
+  {id:'c6',icon:'mdi-map-marker',label:'Location',value:'Bangladesh',type:'location'},
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let edu=[], awards=[], skills=[], switches=[], contacts=[], projects=[];
+let photoConfig={githubUser:'',repo:'',branch:'main',file:'Ratul.jpeg',x:0,y:0,scale:1};
+let cvConfig={preview:'',download:''};
+let ghConfig={user:'',repo:'',branch:'main'};
+let editingEduId=null, editingAwardId=null, editingSkillId=null;
+let editingSwitchId=null, editingProjId=null, editingContactId=null;
+
+// Photo drag
+let photoDragging=false, photoDragStart={x:0,y:0};
+let photoTempPos={x:0,y:0,scale:1};
+let photoEditing=false;
+
+// ============================================================
+// FIREBASE LISTENERS
+// ============================================================
+function initFirebase() {
+  db.collection('portfolio').doc('education').onSnapshot(s=>{
+    edu = s.exists ? (s.data().list||DEF_EDU) : DEF_EDU;
+    renderEdu();
+  });
+  db.collection('portfolio').doc('awards').onSnapshot(s=>{
+    awards = s.exists ? (s.data().list||DEF_AWARDS) : DEF_AWARDS;
+    renderAwards();
+  });
+  db.collection('portfolio').doc('skills').onSnapshot(s=>{
+    skills = s.exists ? (s.data().list||DEF_SKILLS) : DEF_SKILLS;
+    renderSkills();
+  });
+  db.collection('portfolio').doc('switches').onSnapshot(s=>{
+    switches = s.exists ? (s.data().list||DEF_SWITCHES) : DEF_SWITCHES;
+    renderSwitches();
+  });
+  db.collection('portfolio').doc('contacts').onSnapshot(s=>{
+    contacts = s.exists ? (s.data().list||DEF_CONTACTS) : DEF_CONTACTS;
+    renderFooters();
+  });
+  db.collection('portfolio').doc('projects').onSnapshot(s=>{
+    projects = s.exists ? (s.data().list||[]) : [];
+    renderProjects();
+  });
+  db.collection('portfolio').doc('photoConfig').onSnapshot(s=>{
+    if(s.exists){
+      photoConfig={...photoConfig,...s.data()};
+      photoTempPos={x:photoConfig.x||0,y:photoConfig.y||0,scale:photoConfig.scale||1};
+      applyPhoto();
+    }
+  });
+  db.collection('portfolio').doc('cvConfig').onSnapshot(s=>{
+    if(s.exists){ cvConfig=s.data(); applyCVConfig(); }
+  });
+  db.collection('portfolio').doc('ghConfig').onSnapshot(s=>{
+    if(s.exists) ghConfig=s.data();
+  });
+}
+
+// ============================================================
+// RENDER FUNCTIONS
+// ============================================================
+function renderEdu(){
+  const el=document.getElementById('eduList');
+  el.innerHTML=edu.map(e=>`
+    <div class="card edu-card">
+      <div class="edu-icon"><i class="mdi ${e.icon}"></i></div>
+      <div style="flex:1;min-width:0">
+        <div class="edu-inst">${e.institution}</div>
+        <div class="edu-deg">${e.degree}</div>
+        ${e.grade?`<div class="edu-grade">${e.grade}</div>`:''}
+      </div>
+      <div class="edu-right">
+        <span class="edu-year">${e.year}</span>
+        ${isDevMode?`<button class="ic-btn" onclick="openEduModal('${e.id}')"><i class="mdi mdi-pencil"></i></button>
+        <button class="ic-btn red" onclick="delEdu('${e.id}')"><i class="mdi mdi-delete"></i></button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function renderAwards(){
+  const el=document.getElementById('awardList');
+  el.innerHTML=awards.map(a=>`
+    <div class="card award-card">
+      <div class="award-icon"><i class="mdi ${a.icon}"></i></div>
+      <div style="flex:1;min-width:0">
+        <div class="award-title">${a.title}</div>
+        <div class="award-tags">
+          ${a.year?`<span class="tag tag-yr">${a.year}</span>`:''}
+          ${a.category?`<span class="tag tag-cat">${a.category}</span>`:''}
+        </div>
+      </div>
+      ${isDevMode?`<div style="display:flex;gap:4px;flex-shrink:0">
+        <button class="ic-btn" onclick="openAwardModal('${a.id}')"><i class="mdi mdi-pencil"></i></button>
+        <button class="ic-btn red" onclick="delAward('${a.id}')"><i class="mdi mdi-delete"></i></button>
+      </div>`:''}
+    </div>`).join('');
+}
+
+function renderSkills(){
+  document.getElementById('skillList').innerHTML=skills.map(s=>`
+    <div class="card skill-card">
+      <div class="skill-top">
+        <div class="skill-left">
+          <div class="skill-ico"><i class="mdi ${s.icon}"></i></div>
+          <div class="skill-name">${s.name}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="skill-pct">${s.level}%</span>
+          ${isDevMode?`<button class="ic-btn" onclick="openSkillModal('${s.id}')"><i class="mdi mdi-pencil"></i></button>
+          <button class="ic-btn red" onclick="delSkill('${s.id}')"><i class="mdi mdi-delete"></i></button>`:''}
+        </div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${s.level}%"></div></div>
+    </div>`).join('');
+}
+
+function renderSwitches(){
+  document.getElementById('switchList').innerHTML=switches.map(s=>`
+    <div style="display:flex;align-items:center;gap:6px">
+      <a class="card switch-link" href="${s.link||'#'}" target="${s.link?'_blank':'_self'}">
+        <i class="mdi ${s.icon}"></i>${s.name}
+        ${s.link?'<i class="mdi mdi-open-in-new" style="font-size:12px;color:var(--txt3)"></i>':''}
+      </a>
+      ${isDevMode?`<button class="ic-btn" onclick="openSwitchModal('${s.id}')"><i class="mdi mdi-pencil"></i></button>
+      <button class="ic-btn red" onclick="delSwitch('${s.id}')"><i class="mdi mdi-delete"></i></button>`:''}
+    </div>`).join('');
+}
+
+const TYPE_COLORS={
+  'Circuit Design':'#4f46e5','Embedded System':'#00d4ff','Web App':'#a855f7',
+  'Research':'#f59e0b','IoT':'#10b981','Machine Learning':'#ef4444','Mobile App':'#8b5cf6','Other':'#6b7280'
+};
+function renderProjects(){
+  const list=document.getElementById('projList');
+  const empty=document.getElementById('projEmpty');
+  if(!projects.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const GHRAW='https://raw.githubusercontent.com/';
+  list.innerHTML=projects.map(p=>{
+    const c=TYPE_COLORS[p.type]||'#6b7280';
+    const imgUrl=p.hasImg&&p.imgFile&&ghConfig.user
+      ?`${GHRAW}${ghConfig.user}/${ghConfig.repo}/${ghConfig.branch}/${p.imgFile}`:null;
+    return `<div class="card proj-card">
+      ${imgUrl
+        ?`<div class="proj-img"><img src="${imgUrl}" alt="${p.name}" onerror="this.parentNode.style.display='none'"><div class="proj-img-overlay"></div></div>`
+        :`<div class="proj-no-img" style="background:${c}15;border-bottom:1px solid ${c}30;color:${c}"><i class="mdi ${p.icon||'mdi-code-braces'}"></i></div>`}
+      <div class="proj-body">
+        <div class="proj-head">
+          <div class="proj-name">${p.name}</div>
+          <span class="proj-type" style="background:${c}22;color:${c};border:1px solid ${c}44">${p.type}</span>
+        </div>
+        ${p.hasText&&p.desc?`<div class="proj-desc">${p.desc}</div>`:''}
+        <div class="proj-footer">
+          ${p.hasLink&&p.link?`<a href="${p.link}" target="_blank" class="btn-outline proj-link"><i class="mdi mdi-open-in-new"></i>View</a>`:''}
+          ${isDevMode?`<button class="ic-btn" onclick="openProjModal('${p.id}')"><i class="mdi mdi-pencil"></i></button>
+          <button class="ic-btn red" onclick="delProj('${p.id}')"><i class="mdi mdi-delete"></i></button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Footer rendered in all pages
+function renderFooters(){
+  const html=buildFooterHTML();
+  ['home','cv','skills','research','projects'].forEach(p=>{
+    const el=document.getElementById('footer-'+p);
+    if(el) el.innerHTML=html;
+  });
+}
+
+function buildFooterHTML(){
+  return `<footer>
+    <div class="footer-inner">
+      <div class="footer-title"><span style="background:linear-gradient(135deg,#fff,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Let's Connect</span> ✨</div>
+      <div class="footer-sub">Reach out for opportunities, collaborations, or just to say hi!</div>
+      <div class="contact-grid">
+        ${contacts.map(c=>`
+          <div class="card contact-card" onclick="handleContact('${c.id}')">
+            <div class="contact-ico"><i class="mdi ${c.icon}"></i></div>
+            <div style="flex:1;min-width:0">
+              <div class="contact-lbl">${c.label}</div>
+              <div class="contact-val" id="ctval-${c.id}">${getContactDisplay(c)}</div>
+            </div>
+            ${isDevMode?`<div class="dev-actions">
+              <button class="ic-btn" onclick="event.stopPropagation();openContactModal('${c.id}')"><i class="mdi mdi-pencil"></i></button>
+              <button class="ic-btn red" onclick="event.stopPropagation();delContact('${c.id}')"><i class="mdi mdi-delete"></i></button>
+            </div>`:''}
+          </div>`).join('')}
+        ${isDevMode?`<button class="btn-add" onclick="openContactModal('new')" style="min-height:80px;justify-content:center"><i class="mdi mdi-plus-circle"></i>Add Contact</button>`:''}
+      </div>
+      <div class="footer-copy">© 2025 Ratul Krishna Mojumder <span style="margin:0 12px;color:var(--border)">|</span> Built with ⚡ & 💜</div>
+    </div>
+  </footer>`;
+}
+
+function getContactDisplay(c){
+  if(c.type==='link') return c.value?'Open link':'Not set';
+  if(c.type==='location') return c.value||'—';
+  return c.value||'—';
+}
+
+function handleContact(id){
+  if(isDevMode)return;
+  const c=contacts.find(x=>x.id===id);
+  if(!c||!c.value)return;
+  if(c.type==='phone'){
+    navigator.clipboard.writeText(c.value).then(()=>{
+      const el=document.getElementById('ctval-'+id);
+      if(el){const old=el.textContent;el.textContent='✓ Copied!';setTimeout(()=>el.textContent=old,2000);}
+    });
+  } else if(c.type==='whatsapp') window.open('https://wa.me/'+c.value.replace(/\D/g,''),'_blank');
+  else if(c.type==='email') window.open('mailto:'+c.value,'_blank');
+  else if(c.type==='link') window.open(c.value,'_blank');
+  else if(c.type==='location') window.open('https://maps.google.com/?q='+encodeURIComponent(c.value),'_blank');
+}
+
+// ============================================================
+// PHOTO
+// ============================================================
+function applyPhoto(){
+  const img=document.getElementById('photoImg');
+  const noPhoto=document.getElementById('noPhoto')
